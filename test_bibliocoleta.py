@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from bibliopnrs import brazil_url, collect, enrich_records, folder_for_query, output_folder, page_url, parse_total, query_url, secure_scielo_url, validate_url
+from bibliocoleta import brazil_url, collect, enrich_records, folder_for_query, output_folder, page_url, parse_total, query_url, secure_scielo_url, validate_url
 from urllib.parse import parse_qs, urlparse
 
 
@@ -66,8 +66,8 @@ class SearchTests(unittest.TestCase):
         self.assertIn("page=2", url)
 
     def test_query_url_keeps_exact_field_expression(self):
-        url = query_url('subject:("Política Nacional de Resíduos Sólidos")')
-        self.assertIn("q=subject%3A%28%22Pol%C3%ADtica", url)
+        url = query_url('subject:("ciência aberta")')
+        self.assertIn("q=subject%3A%28%22ci%C3%AAncia+aberta%22%29", url)
         self.assertEqual(parse_qs(urlparse(url).query)["filter[in][]"], ["scl"])
 
     def test_brazil_filter_replaces_other_collections_and_preserves_filters(self):
@@ -81,9 +81,9 @@ class SearchTests(unittest.TestCase):
                          "https://www.scielo.br/j/abc/a/123/?lang=pt")
 
     def test_default_folder_uses_search_term(self):
-        url = query_url('subject:("Política Nacional de Resíduos Sólidos")')
-        self.assertEqual(folder_for_query(url), "Política Nacional de Resíduos Sólidos")
-        self.assertEqual(output_folder(url, None).parts[-2:], ("artigos", "Política Nacional de Resíduos Sólidos"))
+        url = query_url('subject:("ciência aberta")')
+        self.assertEqual(folder_for_query(url), "ciência aberta")
+        self.assertEqual(output_folder(url, None).parts[-2:], ("artigos", "ciência aberta"))
 
     def test_custom_output_folder_is_preserved(self):
         self.assertEqual(output_folder(self.URL, Path("outra-pasta")), Path("outra-pasta"))

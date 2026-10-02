@@ -14,8 +14,8 @@ import interface
 
 class InterfaceTests(unittest.TestCase):
     def test_search_terms_and_scielo_link(self):
-        url = interface.make_search_url({"source": "terms", "field": "ti", "terms": "resíduos sólidos"})
-        self.assertEqual(parse_qs(urlparse(url).query)["q"], ['ti:("resíduos sólidos")'])
+        url = interface.make_search_url({"source": "terms", "field": "ti", "terms": "ciência aberta"})
+        self.assertEqual(parse_qs(urlparse(url).query)["q"], ['ti:("ciência aberta")'])
         filtered = interface.make_search_url({"source": "url", "url":
             "https://search.scielo.org/?q=teste&filter%5Bla%5D%5B%5D=pt"})
         params = parse_qs(urlparse(filtered).query)
@@ -41,7 +41,7 @@ class InterfaceTests(unittest.TestCase):
     def test_packaged_collection_logs_without_standard_streams(self):
         with TemporaryDirectory() as temp:
             log_file = Path(temp) / "coleta.log"
-            args = ["BiblioPNRS.exe", "--collect", "--log-file", str(log_file),
+            args = ["BiblioColeta.exe", "--collect", "--log-file", str(log_file),
                     "--url", "invalid", "--data-busca", "01/01/2026"]
             with patch.object(interface, "FROZEN", True), \
                  patch.object(sys, "_MEIPASS", temp, create=True), \
