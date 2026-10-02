@@ -1,10 +1,5 @@
-.venv/
-.venv-build/
-__pycache__/
-build/
-dist/
-*.spec
 *.zip
-coleta-*/
-artigos/*
-!artigos/.gitkeep
+node_modules/
+artigos/
+__pycache__/
+.venv/

@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "BiblioColeta",
+  "version": "0.1.0",
+  "description": "Coleta metadados de artigos da SciELO Brasil e gera uma planilha CSV.",
+  "action": {
+    "default_title": "Abrir BiblioColeta",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "permissions": ["scripting", "downloads"],
+  "host_permissions": [
+    "https://search.scielo.org/*",
+    "https://www.scielo.br/*",
+    "https://scielo.br/*"
+  ]
+}

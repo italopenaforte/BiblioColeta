@@ -1,66 +1,28 @@
 # BiblioColeta
 
-Ferramenta para buscar artigos na coleção **SciELO Brasil** e gerar uma planilha CSV para triagem. Ela visita os artigos para reunir os metadados disponíveis. Os PDFs não são baixados.
+O BiblioColeta é uma extensão do Chrome que reúne os artigos de uma pesquisa da **SciELO Brasil** em uma planilha. Você faz a pesquisa no site da SciELO, aplica os filtros que quiser e usa a extensão para coletar os resultados. Os PDFs não são baixados.
 
-## Para quem vai usar no Windows
+## Instalar e usar
 
-1. Receba o arquivo `BiblioColeta-Windows.zip` do responsável pela pesquisa e extraia a pasta inteira.
-2. Abra a pasta `BiblioColeta` e dê dois cliques em `BiblioColeta.exe`.
-3. Na página que abrir, digite os termos da busca e escolha onde procurar. Se você já aplicou filtros na SciELO, selecione **Usar uma busca pronta da SciELO** e cole o link completo da página de resultados.
-4. Confira a data e clique em **Iniciar coleta**. Aguarde a mensagem de conclusão; a duração depende do número de artigos.
-5. Clique em **Baixar planilha CSV**. Uma cópia também ficará na pasta `artigos`, ao lado do aplicativo. A triagem é feita nas colunas vazias da planilha.
+Siga o [guia passo a passo](docs/extension/INSTALACAO.md) para instalar a versão de teste no Chrome. A extensão ainda não está na Chrome Web Store.
 
-Mantenha o aplicativo aberto até a coleta terminar. Cada execução cria uma pasta própria para preservar coletas anteriores.
+Depois de instalar:
 
-## Para quem prepara a distribuição
+1. Faça a pesquisa no [site da SciELO](https://search.scielo.org/) e deixe os resultados abertos.
+2. Clique no ícone **BiblioColeta** no Chrome, confira o endereço da pesquisa e clique em **Iniciar coleta**.
+3. Espere a mensagem **Coleta concluída** e clique em **Baixar planilha**. O arquivo `artigos.csv` pode ser aberto no Excel, LibreOffice ou Google Planilhas.
 
-Em um computador Windows com Python 3 instalado, abra PowerShell na pasta do projeto e execute:
+Se a coleta parar, a página permite retomá-la e copiar a mensagem de erro para pedir ajuda. Os registros já coletados ficam guardados neste perfil do Chrome até você apagá-los.
 
-```powershell
-.\construir_windows.ps1
-```
+## Para quem desenvolve ou distribui
 
-Isso instala as dependências de construção, inclui o navegador necessário e cria `BiblioColeta-Windows.zip`. Distribua o ZIP completo, não apenas o `.exe`. A construção exige conexão com a internet; quem recebe o ZIP não precisa instalar Python nem Playwright.
-
-O GitHub gera o pacote automaticamente somente quando um PR é mesclado na branch `main`. O workflow **Criar aplicativo Windows** executa os testes e verifica o aplicativo empacotado antes de publicar `BiblioColeta-Windows.zip` em **Releases**, com uma versão identificada por `build-N`. Para distribuir, abra a Release e baixe o ZIP em **Assets**. O pacote também fica disponível como artefato da execução. PRs abertos ou fechados sem merge não geram pacotes; não é necessário criar tags manualmente.
-
-Para testar a interface no próprio Windows antes de empacotar, dê dois cliques em `Iniciar BiblioColeta.bat`. Esse iniciador requer Python 3 e prepara as dependências na primeira execução.
-
-## Uso técnico pela linha de comando
-
-O programa também pode ser executado como script Python. Nesse modo, a consulta e o destino podem ser informados por parâmetros.
-
-### Preparação
+A extensão está na pasta [`extension/`](extension/). Os testes usam Node.js 22 ou mais recente. Para verificar e criar o pacote:
 
 ```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m playwright install chromium
+npm test
+npm run package:chrome
 ```
 
-Você pode informar diretamente a consulta na sintaxe da SciELO. O campo faz parte da consulta (`ti` para título, `kw` para palavras chave, `ab` para resumo, `subject` para título, resumo e palavras chave).
+O segundo comando cria `BiblioColeta-Chrome.zip` na raiz do projeto, com apenas os arquivos da extensão. Não há dependências de desenvolvimento no pacote. O workflow [Criar extensão Chrome](.github/workflows/chrome-extension.yml) executa esses comandos e anexa o ZIP a uma Release quando um pull request é mesclado na `main`.
 
-```bash
-.venv/bin/python bibliocoleta.py \
-  --consulta 'subject:("ciência aberta")' \
-  --data-busca 01/10/2026
-```
-
-Se a pesquisa tiver filtros, faça a busca no navegador da SciELO, aplique o campo e os filtros desejados e copie a **URL completa** da página de resultados. O script preserva os demais parâmetros e aplica a coleção Brasil (`scl`), substituindo qualquer filtro de coleção presente na URL.
-
-```bash
-.venv/bin/python bibliocoleta.py \
-  --url 'https://search.scielo.org/?q=subject%3A%22ci%C3%AAncia+aberta%22&lang=pt' \
-  --data-busca 01/10/2026
-```
-
-O exemplo de URL ilustra apenas a sintaxe: use a URL real da pesquisa. `--navegador` mostra o Chromium se for necessário acompanhar a página. A data informada documenta a busca original. O script lê automaticamente o total atual da coleção Brasil para saber quantas páginas percorrer.
-
-Por padrão, a coleta fica em `artigos/ciência aberta/` dentro deste projeto, com o nome da pasta extraído da consulta. Você pode escolher outro destino com `--saida outra-pasta`.
-
-### Arquivos gerados
-
-- `busca.json`: consulta ou URL original, data, total encontrado, total coletado e data da coleta.
-- `artigos.csv`: ID, título, autores, ano, periódico, volume, número, DOI, palavras chave, resumo, idioma, link do artigo, link do PDF e colunas vazias para triagem manual. Campos indisponíveis ficam vazios. O link do PDF é apenas registrado, sem download. O arquivo usa vírgulas como separador e codificação UTF-8 para importar no Google Sheets.
-
-O script exige uma pasta de saída nova para cada execução. Se a pasta do termo já existir, use `--saida` com outro nome para preservar a coleta anterior. A SciELO pode mudar sua página ou bloquear automação; nesse caso, execute com `--navegador` e revise a mensagem de erro.
+Leia também [privacidade](docs/extension/PRIVACIDADE.md) e [estado da validação](docs/extension/VALIDACAO.md). A coleta real com a SciELO e o uso no Chrome ainda precisam de validação documentada antes de apresentar a extensão como pronta para publicação na loja.

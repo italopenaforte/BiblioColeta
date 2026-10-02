@@ -1,0 +1,55 @@
+name: Criar extensão Chrome
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Testar extensão
+        run: npm test
+      - name: Empacotar extensão
+        run: npm run package:chrome
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BiblioColeta-Chrome
+          path: BiblioColeta-Chrome.zip
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: BiblioColeta-Chrome
+      - name: Publicar extensão na Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: chrome-build-${{ github.run_number }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" BiblioColeta-Chrome.zip --clobber
+          else
+            gh release create "$RELEASE_TAG" BiblioColeta-Chrome.zip \
+              --target "$RELEASE_SHA" \
+              --title "BiblioColeta para Chrome — $RELEASE_TAG" \
+              --notes 'Versão de teste. Extraia o ZIP e carregue a pasta da extensão em chrome://extensions usando o modo de desenvolvedor.'
+          fi

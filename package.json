@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/extension/*.test.js",
+    "package:chrome": "node scripts/package-extension.mjs"
+  }
+}
