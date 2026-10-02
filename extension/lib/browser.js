@@ -4,6 +4,7 @@ import { secureScieloUrl } from './merge-metadata.js';
 
 const SEARCH_HOSTS = new Set(['search.scielo.org']);
 const ARTICLE_HOSTS = new Set(['www.scielo.br', 'scielo.br']);
+const RETRY_DELAYS = [1000, 3000];
 
 function abortError() { return new DOMException('Coleta interrompida.', 'AbortError'); }
 
@@ -27,7 +28,17 @@ function allowedUrl(value, hosts) {
   return url;
 }
 
-async function readPage(tabId, target, reader, hosts, signal) {
+function temporaryError(title, body) {
+  const heading = `${title} ${body.slice(0, 160)}`;
+  const match = heading.match(/\b(500|502|503|504)\b|bad gateway|gateway timeout|service unavailable|internal server error/i);
+  if (!match) return null;
+  const error = new Error(`A SciELO apresentou um erro temporário (${match[0]}).`);
+  error.code = 'transient';
+  error.retryable = true;
+  return error;
+}
+
+async function readPageOnce(tabId, target, reader, hosts, signal) {
   allowedUrl(target, hosts);
   checkSignal(signal);
   await chrome.tabs.update(tabId, { url: target });
@@ -50,17 +61,36 @@ async function readPage(tabId, target, reader, hosts, signal) {
           target: { tabId },
           func: () => ({ title: document.title, text: document.body?.innerText?.slice(0, 350) || '' }),
         });
-        const summary = `${diagnostic?.result?.title || ''} ${diagnostic?.result?.text || ''}`;
+        const title = diagnostic?.result?.title || '';
+        const body = diagnostic?.result?.text || '';
+        const summary = `${title} ${body}`;
         if (/establishing a secure connection|bunny.shield|verificando.{0,30}(navegador|conexão)|access denied|acesso negado/i.test(summary)) {
           const blocked = new Error('A SciELO exibiu uma verificação ou bloqueio de acesso. Abra a aba da SciELO para conferir.');
           blocked.code = 'blocked';
           throw blocked;
         }
+        const transient = temporaryError(title, body);
+        if (transient) throw transient;
       }
     }
     await delay(350, signal);
   }
   throw new Error(`A página da SciELO não ficou pronta: ${lastError}`);
+}
+
+async function readPage(tabId, target, reader, hosts, signal) {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await readPageOnce(tabId, target, reader, hosts, signal);
+    } catch (error) {
+      if (error.code !== 'transient') throw error;
+      if (attempt === RETRY_DELAYS.length) {
+        error.message = `${error.message} Foram feitas ${attempt + 1} tentativas. Clique em Retomar para tentar novamente.`;
+        throw error;
+      }
+      await delay(RETRY_DELAYS[attempt], signal);
+    }
+  }
 }
 
 export async function openWorkerTab() {

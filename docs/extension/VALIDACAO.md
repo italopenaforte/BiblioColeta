@@ -5,7 +5,7 @@ Data: 02/10/2026.
 ## Confirmado neste ambiente
 
 - Sintaxe dos módulos JavaScript: `node --check`.
-- Nove testes de regras de URL, CSV e controlador com dependências simuladas: `npm test`.
+- Doze testes de regras de URL, CSV, controlador e retentativa de erro 502 com dependências simuladas: `npm test`.
 - ZIP gerado com `python3 scripts/package-extension.py`; `manifest.json` está na raiz e não há dependências de desenvolvimento no arquivo.
 
 ## Ainda precisa ser testado no Chrome

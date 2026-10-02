@@ -66,7 +66,7 @@ export function createController({ browser, store, onProgress }) {
                 record = mergeArticleMetadata(record, article.metadata, article.url);
               } catch (error) {
                 if (controller.signal.aborted) throw error;
-                if (error.code === 'blocked') throw error;
+                if (error.code === 'blocked' || error.code === 'transient') throw error;
                 record = { ...record, situacao_metadados: `falha: ${String(error.message || error).slice(0, 180)}` };
               }
             }

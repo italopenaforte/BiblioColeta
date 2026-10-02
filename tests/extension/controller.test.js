@@ -55,6 +55,25 @@ test('falha isolada de artigo preserva o registro e conclui', async () => {
   assert.match(store.records[0].situacao_metadados, /^falha:/);
 });
 
+test('erro temporário em artigo preserva o cursor para retomada', async () => {
+  const store = fakeStore();
+  const error = new Error('502 Bad Gateway');
+  error.code = 'transient';
+  error.retryable = true;
+  const browser = {
+    async openWorkerTab() { return 1; },
+    async readSearchPage() { return { total: 1, records: [{ id_scielo: '1', titulo: 'Um', url_artigo: 'https://www.scielo.br/j/x/a/1/' }] }; },
+    async readArticlePage() { throw error; },
+    async closeWorkerTab() {},
+  };
+  const controller = createController({ store, browser });
+  await controller.start({ normalizedUrl: 'https://search.scielo.org/?q=x' });
+  assert.equal(store.job.status, 'error');
+  assert.equal(store.job.nextArticleIndex, 0);
+  assert.equal(store.job.processedCount, 0);
+  assert.equal(store.job.lastError.retryable, true);
+});
+
 test('pausa durante leitura não confirma uma página nem deixa job rodando', async () => {
   const store = fakeStore();
   let controller;

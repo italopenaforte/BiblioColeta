@@ -19,6 +19,8 @@ Para usar:
 
 Se a coleta for interrompida, abra o BiblioColeta e clique em **Retomar**. Os registros confirmados ficam neste perfil do Chrome. O botão de download indica `-parcial` quando a coleta ainda não foi concluída. Não interprete um CSV parcial como resultado completo.
 
+Se a SciELO mostrar um erro temporário como 502, a extensão tenta carregar a página mais duas vezes. Se as três tentativas falharem, a coleta para com o progresso salvo. Aguarde um pouco e clique em **Retomar**.
+
 Se a SciELO mostrar uma verificação de acesso ou mudar a página, a extensão pode interromper a coleta. Leia a mensagem na tela. Não há mecanismo para contornar bloqueios da SciELO.
 
 Para atualizar uma instalação local, substitua os arquivos da pasta e clique em **Atualizar** no cartão da extensão em `chrome://extensions`. Preserve seu perfil do Chrome para manter coletas salvas; remova a extensão somente após exportar o que precisar.
