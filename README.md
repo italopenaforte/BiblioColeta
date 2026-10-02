@@ -4,9 +4,7 @@ O BiblioColeta é uma extensão do Chrome que reúne os artigos de uma pesquisa 
 
 ## Instalar e usar
 
-Siga o [guia passo a passo](docs/extension/INSTALACAO.md) para instalar a versão de teste no Chrome. A extensão ainda não está na Chrome Web Store.
-
-Para disponibilizá-la na loja, siga o [guia ilustrado de publicação](docs/extension/PUBLICACAO_CHROME.md).
+Siga o [guia passo a passo com fotos reais](docs/extension/INSTALACAO.md) para instalar a extensão no Chrome.
 
 Depois de instalar:
 
@@ -27,4 +25,4 @@ npm run package:chrome
 
 O segundo comando cria `BiblioColeta-Chrome.zip` na raiz do projeto, com apenas os arquivos da extensão. Não há dependências de desenvolvimento no pacote. O workflow [Criar extensão Chrome](.github/workflows/chrome-extension.yml) executa esses comandos e anexa o ZIP a uma Release quando um pull request é mesclado na `main`.
 
-Leia também [privacidade](docs/extension/PRIVACIDADE.md) e [estado da validação](docs/extension/VALIDACAO.md). A coleta real com a SciELO e o uso no Chrome ainda precisam de validação documentada antes de apresentar a extensão como pronta para publicação na loja.
+Leia também [privacidade](docs/extension/PRIVACIDADE.md) e [estado da validação](docs/extension/VALIDACAO.md). A coleta real com a SciELO e o uso no Chrome ainda precisam de validação documentada.

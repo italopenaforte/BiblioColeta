@@ -18,4 +18,4 @@ Data: 02/10/2026.
 
 Uma consulta direta à SciELO neste ambiente retornou HTTP 403 com página de verificação de acesso. O Chromium local também não iniciou por erro do ambiente macOS. Isso impede afirmar que o fluxo real foi validado. O tratamento da página de verificação foi incluído, mas precisa de teste no navegador do usuário.
 
-**Não publicar na Chrome Web Store nem apresentar a extensão como validada até passar pelos testes acima.**
+**Não apresentar a extensão como validada até passar pelos testes acima.**
