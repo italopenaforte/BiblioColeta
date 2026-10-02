@@ -23,7 +23,11 @@ jobs:
         shell: pwsh
         run: |
           & '.\dist\BiblioPNRS\BiblioPNRS.exe' --check
-          if ($LASTEXITCODE -ne 0) { throw 'O navegador não abriu no aplicativo empacotado.' }
+          if ($LASTEXITCODE -ne 0) {
+            $errorFile = '.\dist\BiblioPNRS\check-error.txt'
+            if (Test-Path $errorFile) { Get-Content $errorFile }
+            throw 'A verificação do aplicativo empacotado falhou.'
+          }
       - uses: actions/upload-artifact@v4
         with:
           name: BiblioPNRS-Windows

@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import sys
 import threading
 import unittest
 from unittest.mock import patch
@@ -36,6 +37,24 @@ class InterfaceTests(unittest.TestCase):
                 second = interface.next_folder(url)
                 self.assertNotEqual(first, second)
                 self.assertEqual(second.parent, first.parent)
+
+    def test_packaged_collection_logs_without_standard_streams(self):
+        with TemporaryDirectory() as temp:
+            log_file = Path(temp) / "coleta.log"
+            args = ["BiblioPNRS.exe", "--collect", "--log-file", str(log_file),
+                    "--url", "invalid", "--data-busca", "01/01/2026"]
+            with patch.object(interface, "FROZEN", True), \
+                 patch.object(sys, "_MEIPASS", temp, create=True), \
+                 patch.object(sys, "argv", args), \
+                 patch.object(sys, "stdout", None), \
+                 patch.object(sys, "stderr", None), \
+                 patch.dict(interface.os.environ, {}, clear=False):
+                with self.assertRaises(SystemExit) as result:
+                    interface.main()
+                sys.stdout.close()
+                sys.stderr.close()
+            self.assertEqual(result.exception.code, 2)
+            self.assertIn("Erro:", log_file.read_text(encoding="utf-8"))
 
     def test_local_page_requires_token_and_rejects_invalid_search(self):
         try:

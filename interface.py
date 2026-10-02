@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -11,7 +12,10 @@ from pathlib import Path
 import secrets
 import subprocess
 import sys
+import tempfile
 import threading
+import time
+import traceback
 from urllib.parse import parse_qs, quote, urlparse
 import webbrowser
 
@@ -61,20 +65,36 @@ def next_folder(url: str) -> Path:
 
 
 def run_collection(url: str, search_date: str, folder: Path) -> None:
-    if FROZEN:
-        command = [sys.executable, "--collect", "--url", url, "--data-busca", search_date,
-                   "--saida", str(folder)]
-    else:
-        command = [sys.executable, "-u", str(ROOT / "bibliopnrs.py"), "--url", url,
-                   "--data-busca", search_date, "--saida", str(folder)]
     try:
-        process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, text=True, bufsize=1)
-        assert process.stdout is not None
-        for line in process.stdout:
-            with LOCK:
-                STATE["lines"].append(line.rstrip())
-        code = process.wait()
+        if FROZEN:
+            with tempfile.TemporaryDirectory(prefix="bibliopnrs-") as temp:
+                log_file = Path(temp) / "coleta.log"
+                log_file.touch()
+                command = [sys.executable, "--collect", "--log-file", str(log_file),
+                           "--url", url, "--data-busca", search_date, "--saida", str(folder)]
+                process = subprocess.Popen(command, cwd=ROOT, stdin=subprocess.DEVNULL,
+                                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                with log_file.open(encoding="utf-8", errors="replace") as output:
+                    while True:
+                        line = output.readline()
+                        if line:
+                            with LOCK:
+                                STATE["lines"].append(line.rstrip())
+                        elif process.poll() is None:
+                            time.sleep(0.1)
+                        else:
+                            break
+                code = process.wait()
+        else:
+            command = [sys.executable, "-u", str(ROOT / "bibliopnrs.py"), "--url", url,
+                       "--data-busca", search_date, "--saida", str(folder)]
+            process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT, text=True, bufsize=1)
+            assert process.stdout is not None
+            for line in process.stdout:
+                with LOCK:
+                    STATE["lines"].append(line.rstrip())
+            code = process.wait()
         with LOCK:
             STATE["result"] = "done" if code == 0 else "error"
             STATE["running"] = False
@@ -235,27 +255,45 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     if FROZEN:
+        if sys.stdout is None:
+            sys.stdout = open(os.devnull, "w")
+        if sys.stderr is None:
+            sys.stderr = open(os.devnull, "w")
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(
             Path(sys._MEIPASS) / "playwright" / "driver" / "package" / ".local-browsers")
     if FROZEN and len(sys.argv) > 1 and sys.argv[1] == "--check":
-        from playwright.sync_api import sync_playwright
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch()
-            browser.close()
-        probe = subprocess.run([sys.executable, "--collect", "--url", "invalid",
-                                "--data-busca", "01/01/2026"],
-                               capture_output=True, text=True, check=False)
-        if probe.returncode != 2 or "Erro:" not in probe.stderr:
-            raise RuntimeError(f"A coleta empacotada não iniciou corretamente: {probe.stderr or probe.stdout}")
+        try:
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as playwright:
+                browser = playwright.chromium.launch()
+                browser.close()
+            with tempfile.TemporaryDirectory(prefix="bibliopnrs-check-") as temp:
+                log_file = Path(temp) / "coleta.log"
+                probe = subprocess.run([sys.executable, "--collect", "--log-file", str(log_file),
+                                        "--url", "invalid", "--data-busca", "01/01/2026"],
+                                       stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL, timeout=30, check=False)
+                output = log_file.read_text(encoding="utf-8") if log_file.exists() else "Sem log da coleta."
+                if probe.returncode != 2 or "Erro:" not in output:
+                    raise RuntimeError(f"A coleta empacotada não iniciou corretamente: {output}")
+        except Exception:
+            (ROOT / "check-error.txt").write_text(traceback.format_exc(), encoding="utf-8")
+            raise SystemExit(1)
         return
     if FROZEN and len(sys.argv) > 1 and sys.argv[1] == "--collect":
         import bibliopnrs
-        if sys.stdout is None:
-            sys.stdout = open(1, "w", encoding="utf-8", buffering=1, closefd=False)
-        if sys.stderr is None:
-            sys.stderr = open(2, "w", encoding="utf-8", buffering=1, closefd=False)
-        sys.argv.pop(1)
-        raise SystemExit(bibliopnrs.main())
+        if len(sys.argv) < 4 or sys.argv[2] != "--log-file":
+            raise SystemExit(2)
+        log_file = Path(sys.argv[3])
+        sys.argv = [sys.argv[0], *sys.argv[4:]]
+        with log_file.open("w", encoding="utf-8", buffering=1) as output:
+            with redirect_stdout(output), redirect_stderr(output):
+                try:
+                    code = bibliopnrs.main()
+                except Exception:
+                    traceback.print_exc()
+                    code = 1
+        raise SystemExit(code)
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     address = f"http://127.0.0.1:{server.server_port}/?token={TOKEN}"
     if not FROZEN:
