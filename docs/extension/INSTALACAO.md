@@ -1,6 +1,6 @@
 # Como instalar e usar o BiblioColeta no Chrome
 
-O BiblioColeta transforma os resultados de uma pesquisa da **SciELO Brasil** em uma planilha. Você faz a pesquisa no site da SciELO; a extensão reúne os artigos. Não é preciso instalar Python nem digitar comandos.
+O BiblioColeta transforma os resultados de uma pesquisa da **SciELO Brasil** em uma planilha. Você faz a pesquisa no site da SciELO; a extensão reúne os artigos. Não é preciso digitar comandos.
 
 ## Instalar a extensão
 

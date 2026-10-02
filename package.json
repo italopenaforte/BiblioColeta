@@ -3,6 +3,6 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/extension/*.test.js",
-    "package:chrome": "python3 scripts/package-extension.py"
+    "package:chrome": "node scripts/package-extension.mjs"
   }
 }
