@@ -1,17 +1,21 @@
 name: Criar aplicativo Windows
 
 on:
-  push:
-    branches: [main]
   pull_request:
+    types: [closed]
     branches: [main]
-  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    if: github.event.pull_request.merged == true
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -41,3 +45,29 @@ jobs:
         with:
           name: BiblioColeta-Windows
           path: BiblioColeta-Windows.zip
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: BiblioColeta-Windows
+      - name: Publicar pacote na Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: build-${{ github.run_number }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" BiblioColeta-Windows.zip --clobber
+          else
+            gh release create "$RELEASE_TAG" BiblioColeta-Windows.zip \
+              --target "$RELEASE_SHA" \
+              --title "BiblioColeta — $RELEASE_TAG" \
+              --notes 'Baixe BiblioColeta-Windows.zip, extraia a pasta inteira e abra BiblioColeta.exe. Não é necessário instalar Python.'
+          fi
