@@ -22,7 +22,7 @@ Em um computador Windows com Python 3 instalado, abra PowerShell na pasta do pro
 
 Isso instala as dependências de construção, inclui o navegador necessário e cria `BiblioColeta-Windows.zip`. Distribua o ZIP completo, não apenas o `.exe`. A construção exige conexão com a internet; quem recebe o ZIP não precisa instalar Python nem Playwright.
 
-Também é possível gerar o ZIP no GitHub, sem ter um computador Windows: ao enviar alterações para a branch `main`, o workflow **Criar aplicativo Windows** é executado automaticamente. Você também pode iniciá-lo em **Actions → Criar aplicativo Windows → Run workflow**. Quando terminar, abra a execução e baixe o artefato `BiblioColeta-Windows`; dentro dele estará `BiblioColeta-Windows.zip`. O fluxo verifica se o navegador incluído abre antes de disponibilizar o pacote.
+O GitHub gera o pacote automaticamente somente quando um PR é mesclado na branch `main`. O workflow **Criar aplicativo Windows** executa os testes e verifica o aplicativo empacotado antes de publicar `BiblioColeta-Windows.zip` em **Releases**, com uma versão identificada por `build-N`. Para distribuir, abra a Release e baixe o ZIP em **Assets**. O pacote também fica disponível como artefato da execução. PRs abertos ou fechados sem merge não geram pacotes; não é necessário criar tags manualmente.
 
 Para testar a interface no próprio Windows antes de empacotar, dê dois cliques em `Iniciar BiblioColeta.bat`. Esse iniciador requer Python 3 e prepara as dependências na primeira execução.
 
