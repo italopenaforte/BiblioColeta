@@ -9,7 +9,7 @@ Esta é uma versão de teste, distribuída em um arquivo chamado `BiblioColeta-C
 Nas fotos abaixo, o contorno laranja mostra onde você deve prestar atenção ou clicar.
 
 1. Abra as [Releases do BiblioColeta](https://github.com/italopenaforte/BiblioColeta/releases), escolha **BiblioColeta para Chrome** e baixe **BiblioColeta-Chrome.zip** na seção **Assets**. Se recebeu o arquivo de quem organiza a pesquisa, use esse arquivo. Em geral, ele fica na pasta **Downloads**. Não escolha **Source code**.
-2. Na pasta **Downloads**, clique no ZIP com o botão direito e escolha **Extrair Tudo…**. Escolha uma pasta que você não vai apagar depois. O Chrome precisa desses arquivos para a extensão continuar funcionando.
+2. Na pasta **Downloads**, clique no ZIP com o botão direito e escolha **Extrair Tudo…**. Isso criará uma pasta chamada **BiblioColeta-Chrome**. Guarde essa pasta em um lugar onde não será apagada: o Chrome precisa desses arquivos para a extensão continuar funcionando.
 3. Abra o Chrome. Clique na barra onde você digita endereços, digite `chrome://extensions` e pressione **Enter**.
 
    ![Página de extensões do Chrome; o Modo do desenvolvedor está destacado em laranja no canto superior direito.](images/01-extensoes-antes-destaques.svg)
@@ -17,7 +17,7 @@ Nas fotos abaixo, o contorno laranja mostra onde você deve prestar atenção ou
    *Foto 1 — Esta é a página que deve aparecer. Na captura, “Developer mode” significa “Modo do desenvolvedor”.*
 
 4. Ligue **Modo do desenvolvedor**, no canto superior direito da página.
-5. Clique em **Carregar sem compactação**. Selecione a **pasta extraída** no passo 2 e confirme. Se o Chrome não aceitar a pasta, abra-a e escolha a pasta que contém o arquivo `manifest.json`.
+5. Clique em **Carregar sem compactação**. Na janela que abrir, entre em **Downloads** e selecione a pasta **BiblioColeta-Chrome** que você extraiu no passo 2. Clique em **Selecionar pasta**. A pasta correta contém o arquivo `manifest.json` diretamente dentro dela; não selecione o arquivo ZIP. Se você baixou o código completo do projeto em vez do ZIP da Release, selecione a pasta **extension** do projeto.
 
    ![Página de extensões do Chrome; o botão Load unpacked está destacado em laranja.](images/02-modo-desenvolvedor-destaques.svg)
 
