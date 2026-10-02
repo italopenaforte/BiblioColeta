@@ -4,7 +4,7 @@ O BiblioColeta é uma extensão do Chrome que reúne os artigos de uma pesquisa 
 
 ## Instalar e usar
 
-Siga o [guia passo a passo](docs/extension/INSTALACAO.md) para instalar a versão de teste no Chrome. A extensão ainda não está na Chrome Web Store.
+Siga o [guia passo a passo com fotos reais](docs/extension/INSTALACAO.md) para instalar a versão de teste no Chrome. A extensão ainda não está na Chrome Web Store.
 
 Depois de instalar:
 

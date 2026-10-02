@@ -6,19 +6,42 @@ O BiblioColeta transforma os resultados de uma pesquisa da **SciELO Brasil** em 
 
 Esta é uma versão de teste, distribuída em um arquivo chamado `BiblioColeta-Chrome.zip`. Ela ainda não está na Chrome Web Store.
 
-1. Baixe `BiblioColeta-Chrome.zip` da Release da extensão ou receba o arquivo de quem organiza a pesquisa. Em geral, ele fica na pasta **Downloads**.
+1. Abra as [Releases do BiblioColeta](https://github.com/italopenaforte/BiblioColeta/releases), escolha **BiblioColeta para Chrome** e baixe **BiblioColeta-Chrome.zip** na seção **Assets**. Se recebeu o arquivo de quem organiza a pesquisa, use esse arquivo. Em geral, ele fica na pasta **Downloads**. Não escolha **Source code**.
 2. Na pasta **Downloads**, clique no ZIP com o botão direito e escolha **Extrair Tudo…**. Escolha uma pasta que você não vai apagar depois. O Chrome precisa desses arquivos para a extensão continuar funcionando.
 3. Abra o Chrome. Clique na barra onde você digita endereços, digite `chrome://extensions` e pressione **Enter**.
+
+   ![Página de extensões do Chrome antes de ligar o modo de desenvolvedor; o botão fica no canto superior direito.](images/01-extensoes-antes.png)
+
+   *Foto 1 — Esta é a página que deve aparecer. Na captura, “Developer mode” significa “Modo do desenvolvedor”.*
+
 4. Ligue **Modo do desenvolvedor**, no canto superior direito da página.
 5. Clique em **Carregar sem compactação**. Selecione a **pasta extraída** no passo 2 e confirme. Se o Chrome não aceitar a pasta, abra-a e escolha a pasta que contém o arquivo `manifest.json`.
+
+   ![Página de extensões do Chrome com modo de desenvolvedor ligado e o botão Load unpacked visível.](images/02-modo-desenvolvedor.png)
+
+   *Foto 2 — Depois de ligar o botão no canto superior direito, aparece “Load unpacked”. Em português, esse botão é “Carregar sem compactação”.*
+
 6. Procure o cartão **BiblioColeta** na página de extensões. Ele indica que a instalação terminou.
 
+   ![Cartão do BiblioColeta na página de extensões do Chrome após a instalação.](images/03-bibliocoleta-instalado.png)
+
+   *Foto 3 — O cartão com nome e ícone do BiblioColeta confirma que a extensão foi carregada. O número de identificação e outras extensões na sua tela podem ser diferentes.*
+
 Para deixar o ícone à vista, clique no botão em forma de peça de quebra-cabeça perto da barra de endereços do Chrome e depois no alfinete ao lado de **BiblioColeta**.
+
+![Menu de extensões do Chrome com o BiblioColeta e o alfinete à direita do nome.](images/04-menu-extensoes.png)
+
+*Foto 4 — Encontre “BiblioColeta” no menu e clique no alfinete à direita. Na captura, o menu aparece como “Extensions”.*
 
 ## Fazer uma coleta
 
 1. Abra a [busca da SciELO](https://search.scielo.org/). Digite seu assunto, faça a pesquisa e escolha os filtros que desejar. Espere a página de resultados aparecer.
 2. Ainda nessa página, clique no ícone **BiblioColeta** no Chrome. Uma nova aba se abrirá. Confira se o campo **Endereço da pesquisa** foi preenchido. Se estiver vazio, volte à página de resultados, copie o endereço que aparece na barra do Chrome e cole no campo.
+
+   ![Página do BiblioColeta aberta no Chrome, mostrando o campo Endereço da pesquisa, a Data da busca e o botão Iniciar coleta.](images/05-bibliocoleta-aberto.png)
+
+   *Foto 5 — Esta é a página do BiblioColeta. A foto mostra o endereço vazio; nesse caso, copie o endereço da sua pesquisa na SciELO e cole nesse campo.*
+
 3. Confira a **Data da busca** e clique em **Iniciar coleta**. Essa data serve para registrar quando você pesquisou; ela não filtra os artigos. A extensão considera somente a coleção Brasil.
 4. Deixe o Chrome e a aba do BiblioColeta abertos. A extensão abrirá outra aba para ler os resultados e os artigos. A seção **Acompanhe e baixe a planilha** mostrará quantos artigos já foram guardados.
 5. Quando aparecer **Coleta concluída. A planilha está pronta.**, clique em **Baixar planilha**.
