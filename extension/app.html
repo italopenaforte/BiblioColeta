@@ -12,27 +12,31 @@
     <header>
       <span class="eyebrow">EXTENSÃO DO CHROME</span>
       <h1>BiblioColeta</h1>
-      <p>Transforme uma pesquisa pronta da SciELO Brasil em planilha para triagem.</p>
+      <p>Junte os artigos de uma pesquisa da SciELO Brasil em uma planilha.</p>
     </header>
 
     <section class="card" aria-labelledby="search-title">
-      <h2 id="search-title">Pesquisa da SciELO</h2>
-      <p>Faça sua pesquisa e aplique os filtros no site da SciELO. Depois clique no ícone do BiblioColeta naquela aba. O endereço aparece aqui automaticamente.</p>
+      <h2 id="search-title"><span class="step">1</span> Faça a pesquisa</h2>
+      <p>Abra a <a href="https://search.scielo.org/" target="_blank" rel="noopener noreferrer">página de busca da SciELO</a>, pesquise o assunto e escolha os filtros que quiser. Deixe a página com os resultados aberta.</p>
+      <p>Na página de resultados, clique no ícone do BiblioColeta, perto da barra de endereços do Chrome. O endereço da pesquisa aparecerá abaixo.</p>
+      <h2><span class="step">2</span> Confira e comece</h2>
       <form id="search-form">
-        <label for="search-url">Endereço da página de resultados</label>
+        <label for="search-url">Endereço da pesquisa</label>
         <input id="search-url" name="search-url" type="url" placeholder="https://search.scielo.org/?q=..." required>
-        <small>Você também pode colar o endereço completo da pesquisa. A coleta usa somente a coleção Brasil.</small>
+        <small>Se estiver vazio, copie o endereço da página de resultados na barra do Chrome e cole aqui. A planilha incluirá somente artigos da coleção Brasil.</small>
         <label for="search-date">Data da busca</label>
         <input id="search-date" name="search-date" type="date" required>
+        <small>Esta data registra quando você fez a pesquisa. Ela não muda os resultados.</small>
         <button id="start" type="submit">Iniciar coleta</button>
       </form>
     </section>
 
     <section class="card" aria-labelledby="progress-title" aria-live="polite">
-      <h2 id="progress-title">Andamento</h2>
-      <label for="saved-jobs">Coletas salvas neste navegador</label>
+      <h2 id="progress-title"><span class="step">3</span> Acompanhe e baixe a planilha</h2>
+      <p>Espere a mensagem de conclusão para baixar a planilha. Deixe esta aba e o Chrome abertos enquanto a coleta acontece.</p>
+      <label for="saved-jobs">Pesquisas guardadas neste Chrome</label>
       <select id="saved-jobs"><option value="">Nenhuma coleta salva</option></select>
-      <p id="message">Pronto para começar.</p>
+      <p id="message" class="status">Pronto para começar.</p>
       <progress id="progress" max="1" value="0" hidden></progress>
       <p id="counts" class="muted"></p>
       <div class="actions">
@@ -41,12 +45,15 @@
         <button id="cancel" type="button" hidden>Cancelar</button>
       </div>
       <div class="actions">
-        <button id="csv" type="button" hidden>Baixar planilha CSV</button>
-        <button id="report" type="button" hidden>Baixar dados da busca</button>
+        <button id="csv" type="button" hidden>Baixar planilha</button>
+        <button id="report" type="button" hidden>Baixar resumo da pesquisa</button>
         <button id="delete" type="button" hidden>Apagar esta coleta do navegador</button>
       </div>
       <p id="error" role="alert" hidden></p>
-      <p class="muted">Mantenha esta aba e o Chrome abertos durante a coleta. Os dados confirmados são guardados neste navegador.</p>
+      <button id="copy-error" type="button" class="secondary" hidden>Copiar mensagem do erro</button>
+      <p id="copy-feedback" class="muted" role="status" hidden></p>
+      <p class="muted">Ao clicar em baixar, escolha onde guardar o arquivo. Ele abre no Excel, LibreOffice ou Google Planilhas. Os resultados já coletados ficam guardados neste Chrome, mesmo se você precisar retomar depois.</p>
+      <p id="partial-note" class="notice" hidden>Esta pesquisa ainda não terminou. A planilha baixada agora estará incompleta.</p>
     </section>
   </main>
 </body>

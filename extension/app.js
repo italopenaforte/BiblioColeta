@@ -6,9 +6,12 @@ import { downloadCsv, downloadReport } from './lib/download.js';
 
 const byId = (id) => document.getElementById(id);
 const elements = Object.fromEntries(['search-form', 'search-url', 'search-date', 'start', 'message', 'counts',
-  'progress', 'pause', 'resume', 'cancel', 'csv', 'report', 'delete', 'saved-jobs', 'error'].map((id) => [id, byId(id)]));
+  'progress', 'pause', 'resume', 'cancel', 'csv', 'report', 'delete', 'saved-jobs', 'error',
+  'copy-error', 'copy-feedback', 'partial-note'].map((id) => [id, byId(id)]));
 let currentJob = null;
 let starting = false;
+const statusNames = { running: 'em andamento', paused: 'pausada', completed: 'concluída',
+  cancelled: 'cancelada', error: 'interrompida' };
 
 function localToday() {
   const date = new Date();
@@ -29,21 +32,26 @@ function render(job) {
   elements['saved-jobs'].disabled = active;
   elements.error.hidden = !job?.lastError;
   elements.error.textContent = job?.lastError?.message || '';
+  elements['copy-error'].hidden = !job?.lastError;
+  elements['copy-feedback'].hidden = true;
+  elements['partial-note'].hidden = !job || job.status === 'completed' || job.resultCount === 0;
   if (!job) {
     elements.message.textContent = 'Pronto para começar.';
     elements.counts.textContent = '';
     elements.progress.hidden = true;
     return;
   }
-  const labels = { running: 'Coleta em andamento.', paused: 'Coleta pausada. Você pode retomar.',
+  const labels = { running: job.phase === 'results' ? 'Lendo os resultados da pesquisa…' : 'Lendo os detalhes dos artigos…',
+    paused: 'Coleta pausada. Você pode retomar.',
     completed: 'Coleta concluída. A planilha está pronta.', cancelled: 'Coleta cancelada.',
-    error: 'A coleta foi interrompida. Leia o detalhe abaixo.' };
+    error: 'A coleta parou. Leia a mensagem abaixo. Se for um erro temporário, espere um pouco e clique em Retomar.' };
   elements.message.textContent = labels[job.status] || 'Coleta pronta.';
-  const total = job.expectedTotal === null ? 'a identificar' : job.expectedTotal;
-  elements.counts.textContent = `Resultados: ${job.resultCount}/${total}. Artigos processados: ${job.processedCount}/${job.resultCount}. Metadados detalhados: ${job.enrichedCount}. Falhas: ${job.failedCount}.`;
+  const total = job.expectedTotal === null ? 'total ainda não identificado' : `${job.expectedTotal} encontrados`;
+  elements.counts.textContent = `${job.resultCount} artigos guardados (${total}). ${job.processedCount} de ${job.resultCount} artigos lidos em detalhes. ${job.failedCount} sem detalhes completos.`;
   elements.progress.hidden = job.expectedTotal === null || job.expectedTotal === 0;
   elements.progress.max = Math.max(1, job.expectedTotal || 1);
   elements.progress.value = job.phase === 'results' ? job.resultCount : job.processedCount;
+  elements.progress.setAttribute('aria-label', job.phase === 'results' ? 'Artigos encontrados' : 'Artigos lidos em detalhes');
 }
 
 async function refreshJobs() {
@@ -53,7 +61,7 @@ async function refreshJobs() {
   if (!jobs.length) select.add(new Option('Nenhuma coleta salva', ''));
   for (const job of jobs) {
     const name = new URL(job.normalizedUrl).searchParams.get('q') || 'Pesquisa';
-    select.add(new Option(`${name.slice(0, 55)} · ${job.searchDate} · ${job.status}`, job.id));
+    select.add(new Option(`${name.slice(0, 55)} · ${job.searchDate} · ${statusNames[job.status] || job.status}`, job.id));
   }
   select.value = currentJob?.id || '';
 }
@@ -66,7 +74,26 @@ const controller = createController({ browser, store, onProgress: (job) => {
 function message(error) {
   elements.error.hidden = false;
   elements.error.textContent = String(error?.message || error);
+  elements['copy-error'].hidden = false;
+  elements['copy-feedback'].hidden = true;
 }
+
+elements['copy-error'].addEventListener('click', async () => {
+  try {
+    const details = [
+      'BiblioColeta',
+      `Mensagem: ${elements.error.textContent}`,
+      currentJob ? `Pesquisa: ${currentJob.sourceUrl || currentJob.normalizedUrl}` : '',
+      currentJob ? `Situação: ${statusNames[currentJob.status] || currentJob.status}` : '',
+      currentJob ? `Artigos guardados: ${currentJob.resultCount}; artigos lidos: ${currentJob.processedCount}` : '',
+    ].filter(Boolean).join('\n');
+    await navigator.clipboard.writeText(details);
+    elements['copy-feedback'].textContent = 'Mensagem copiada. Cole no chat ou envie para quem está ajudando você.';
+  } catch {
+    elements['copy-feedback'].textContent = 'Não foi possível copiar. Selecione a mensagem acima e copie com Ctrl+C.';
+  }
+  elements['copy-feedback'].hidden = false;
+});
 
 async function initialize() {
   elements['search-date'].value = localToday();
@@ -84,6 +111,7 @@ elements['search-form'].addEventListener('submit', async (event) => {
   starting = true;
   elements.start.disabled = true;
   elements.error.hidden = true;
+  elements['copy-error'].hidden = true;
   try {
     const previous = await store.getLatestJob();
     if (previous && !['completed', 'cancelled'].includes(previous.status) &&

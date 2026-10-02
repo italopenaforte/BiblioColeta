@@ -4,7 +4,7 @@ O BiblioColeta busca artigos científicos na coleção **SciELO Brasil** e reún
 
 ## Extensão para Chrome — versão de teste
 
-A pessoa faz a pesquisa e aplica os filtros no [site da SciELO](https://search.scielo.org/). Com os resultados abertos, clica no ícone da extensão **BiblioColeta**, confere a URL e a data e escolhe **Iniciar coleta**. A extensão lê as páginas de resultados e os artigos, mostra o andamento e, ao terminar, oferece **Baixar planilha CSV**. O Chrome pergunta onde salvar o arquivo. Também é possível baixar `busca.json` com a URL, a data e os totais.
+A pessoa faz a pesquisa e aplica os filtros no [site da SciELO](https://search.scielo.org/). Com os resultados abertos, clica no ícone da extensão **BiblioColeta**, confere o endereço e a data e escolhe **Iniciar coleta**. Ao aparecer **Coleta concluída**, clica em **Baixar planilha**. O arquivo `artigos.csv` abre no Excel, LibreOffice ou Google Planilhas. O Chrome pergunta onde salvar ou usa a pasta Downloads. Se houver um erro, a página mostra uma mensagem que pode ser copiada para pedir ajuda.
 
 Para instalar a versão local de teste, siga [Instalação da extensão](docs/extension/INSTALACAO.md). Para gerar o ZIP a partir do código, execute `npm test` e `npm run package:chrome`; o arquivo resultante é `BiblioColeta-Chrome.zip`. Node e Python são necessários apenas para preparar esse ZIP, não para usar a extensão no Chrome.
 
