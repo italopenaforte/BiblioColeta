@@ -4,7 +4,7 @@ O BiblioColeta transforma os resultados de uma pesquisa da **SciELO Brasil** em 
 
 ## Instalar a extensão
 
-Esta é uma versão de teste, distribuída em um arquivo chamado `BiblioColeta-Chrome.zip`. Ela ainda não está na Chrome Web Store.
+A extensão é distribuída em um arquivo chamado `BiblioColeta-Chrome.zip`.
 
 Nas fotos abaixo, o contorno laranja mostra onde você deve prestar atenção ou clicar.
 
