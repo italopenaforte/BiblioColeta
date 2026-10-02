@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BiblioColeta — SciELO Brasil</title>
+  <link rel="stylesheet" href="app.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="eyebrow">EXTENSÃO DO CHROME</span>
+      <h1>BiblioColeta</h1>
+      <p>Transforme uma pesquisa pronta da SciELO Brasil em planilha para triagem.</p>
+    </header>
+
+    <section class="card" aria-labelledby="search-title">
+      <h2 id="search-title">Pesquisa da SciELO</h2>
+      <p>Faça sua pesquisa e aplique os filtros no site da SciELO. Depois clique no ícone do BiblioColeta naquela aba. O endereço aparece aqui automaticamente.</p>
+      <form id="search-form">
+        <label for="search-url">Endereço da página de resultados</label>
+        <input id="search-url" name="search-url" type="url" placeholder="https://search.scielo.org/?q=..." required>
+        <small>Você também pode colar o endereço completo da pesquisa. A coleta usa somente a coleção Brasil.</small>
+        <label for="search-date">Data da busca</label>
+        <input id="search-date" name="search-date" type="date" required>
+        <button id="start" type="submit">Iniciar coleta</button>
+      </form>
+    </section>
+
+    <section class="card" aria-labelledby="progress-title" aria-live="polite">
+      <h2 id="progress-title">Andamento</h2>
+      <label for="saved-jobs">Coletas salvas neste navegador</label>
+      <select id="saved-jobs"><option value="">Nenhuma coleta salva</option></select>
+      <p id="message">Pronto para começar.</p>
+      <progress id="progress" max="1" value="0" hidden></progress>
+      <p id="counts" class="muted"></p>
+      <div class="actions">
+        <button id="pause" type="button" hidden>Pausar</button>
+        <button id="resume" type="button" hidden>Retomar</button>
+        <button id="cancel" type="button" hidden>Cancelar</button>
+      </div>
+      <div class="actions">
+        <button id="csv" type="button" hidden>Baixar planilha CSV</button>
+        <button id="report" type="button" hidden>Baixar dados da busca</button>
+        <button id="delete" type="button" hidden>Apagar esta coleta do navegador</button>
+      </div>
+      <p id="error" role="alert" hidden></p>
+      <p class="muted">Mantenha esta aba e o Chrome abertos durante a coleta. Os dados confirmados são guardados neste navegador.</p>
+    </section>
+  </main>
+</body>
+</html>

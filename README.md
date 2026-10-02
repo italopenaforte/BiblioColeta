@@ -1,16 +1,77 @@
 # BiblioColeta
 
-Ferramenta para buscar artigos na coleção **SciELO Brasil** e gerar uma planilha CSV para triagem. Ela visita os artigos para reunir os metadados disponíveis. Os PDFs não são baixados.
+O BiblioColeta busca artigos científicos na coleção **SciELO Brasil** e reúne informações como título, autores, ano e resumo em uma planilha. Você pode usar essa planilha para escolher os artigos que interessam à sua pesquisa. Os PDFs não são baixados.
 
-## Para quem vai usar no Windows
+## Extensão para Chrome — versão de teste
 
-1. Receba o arquivo `BiblioColeta-Windows.zip` do responsável pela pesquisa e extraia a pasta inteira.
-2. Abra a pasta `BiblioColeta` e dê dois cliques em `BiblioColeta.exe`.
-3. Na página que abrir, digite os termos da busca e escolha onde procurar. Se você já aplicou filtros na SciELO, selecione **Usar uma busca pronta da SciELO** e cole o link completo da página de resultados.
-4. Confira a data e clique em **Iniciar coleta**. Aguarde a mensagem de conclusão; a duração depende do número de artigos.
-5. Clique em **Baixar planilha CSV**. Uma cópia também ficará na pasta `artigos`, ao lado do aplicativo. A triagem é feita nas colunas vazias da planilha.
+A pessoa faz a pesquisa e aplica os filtros no [site da SciELO](https://search.scielo.org/). Com os resultados abertos, clica no ícone da extensão **BiblioColeta**, confere a URL e a data e escolhe **Iniciar coleta**. A extensão lê as páginas de resultados e os artigos, mostra o andamento e, ao terminar, oferece **Baixar planilha CSV**. O Chrome pergunta onde salvar o arquivo. Também é possível baixar `busca.json` com a URL, a data e os totais.
 
-Mantenha o aplicativo aberto até a coleta terminar. Cada execução cria uma pasta própria para preservar coletas anteriores.
+Para instalar a versão local de teste, siga [Instalação da extensão](docs/extension/INSTALACAO.md). Para gerar o ZIP a partir do código, execute `npm test` e `npm run package:chrome`; o arquivo resultante é `BiblioColeta-Chrome.zip`. Node e Python são necessários apenas para preparar esse ZIP, não para usar a extensão no Chrome.
+
+**Estado da migração:** a lógica da extensão e os testes de regras estão implementados. A coleta com a SciELO real, a instalação no Chrome e o download no Windows ainda precisam ser validados. Consulte [Validação da extensão](docs/extension/VALIDACAO.md). Até essa validação, a versão Windows abaixo continua disponível.
+
+## Como usar no Windows — passo a passo
+
+Você não precisa saber programar, instalar Python nem digitar comandos. Precisa de um computador Windows e de conexão com a internet para buscar os artigos.
+
+### 1. Baixe o aplicativo
+
+1. Abra a [página de download da versão mais recente](https://github.com/italopenaforte/BiblioColeta/releases/latest).
+2. Procure a seção **Assets** (arquivos para download). Clique nela para expandir, se necessário.
+3. Clique em **BiblioColeta-Windows.zip** e aguarde o download. Geralmente ele fica na pasta **Downloads** do computador.
+
+Escolha o arquivo com esse nome. Os links **Source code** são para quem desenvolve o programa.
+
+Se você recebeu `BiblioColeta-Windows.zip` diretamente de alguém responsável pela pesquisa, pode começar pelo próximo passo.
+
+### 2. Extraia os arquivos
+
+O ZIP é um pacote que guarda todos os arquivos do aplicativo. É preciso extraí-lo antes de usar.
+
+1. Abra a pasta **Downloads** e encontre `BiblioColeta-Windows.zip`.
+2. Clique nele com o **botão direito do mouse** e escolha **Extrair Tudo…**.
+3. Escolha onde guardar a pasta, por exemplo, na **Área de Trabalho**, e clique em **Extrair**.
+4. Abra a pasta extraída e, dentro dela, a pasta **BiblioColeta**.
+
+Mantenha todos os arquivos e pastas juntos, inclusive a pasta `_internal`. Se quiser mover o aplicativo, mova a pasta **BiblioColeta** inteira. Abrir o programa diretamente de dentro do ZIP pode impedir seu funcionamento.
+
+### 3. Abra o BiblioColeta
+
+Dê dois cliques em **BiblioColeta.exe**. Se o Windows esconder a parte `.exe`, o nome aparecerá apenas como **BiblioColeta**, com o tipo **Aplicativo**.
+
+A tela do BiblioColeta abrirá no seu navegador, como Edge, Chrome ou Firefox. Isso é esperado: é ali que você faz a pesquisa. O programa funciona no seu computador e acessa a SciELO pela internet para coletar os dados.
+
+### 4. Faça uma busca
+
+1. Deixe marcada a opção **Buscar por termos**.
+2. Em **Termos da busca**, escreva o assunto que deseja pesquisar, por exemplo, `ciência aberta`.
+3. Em **Onde procurar**, escolha se deseja buscar no título, no resumo ou nas palavras-chave. A opção inicial pesquisa nos três campos.
+4. Confira a **Data da busca**.
+5. Clique em **Iniciar coleta** e acompanhe a seção **Andamento**. Aguarde a mensagem **Coleta concluída. A planilha está pronta.**
+
+Se você já fez uma busca no site da SciELO e aplicou filtros, marque **Usar uma busca pronta da SciELO**. Copie o endereço completo da página de resultados, na barra de endereços do navegador, e cole no campo indicado.
+
+A coleta considera somente a coleção Brasil. O tempo de espera depende da quantidade de artigos; mantenha o aplicativo e a conexão com a internet ativos até terminar.
+
+### 5. Salve e abra a planilha
+
+Clique em **Baixar planilha CSV**. O navegador salvará o arquivo, normalmente em **Downloads**, ou perguntará onde você quer guardá-lo.
+
+CSV é um formato de planilha que pode ser aberto no Excel, no LibreOffice Calc ou importado no Google Planilhas. Se todos os dados aparecerem em uma única coluna, use a opção de importar um arquivo CSV e escolha **vírgula** como separador e **UTF-8** como codificação, quando essas opções forem solicitadas.
+
+Uma cópia também fica na pasta **artigos**, dentro da pasta do aplicativo. Cada coleta ganha uma subpasta própria, para preservar os resultados anteriores. A planilha inclui colunas vazias para você anotar sua seleção de artigos e observações.
+
+### 6. Feche o aplicativo
+
+Depois que a coleta terminar, clique em **Fechar aplicativo** na página. Quando aparecer a confirmação, você pode fechar a aba do navegador.
+
+### Se algo não funcionar
+
+- **O aplicativo não abre ou informa que falta um arquivo:** confirme que extraiu o ZIP inteiro e que o `.exe` continua junto das outras pastas e arquivos.
+- **O navegador não abriu:** verifique se uma nova aba foi aberta no navegador padrão do Windows. Se não houver nenhuma, envie o detalhe do problema à pessoa responsável pela ferramenta.
+- **A coleta foi interrompida:** confira a conexão com a internet e leia a mensagem na seção **Andamento**. Envie essa mensagem à pessoa responsável se o problema continuar.
+
+As seções abaixo são para quem desenvolve ou prepara o aplicativo para distribuição.
 
 ## Para quem prepara a distribuição
 

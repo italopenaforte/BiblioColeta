@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "BiblioColeta",
+  "version": "0.1.0",
+  "description": "Coleta metadados de artigos da SciELO Brasil e gera uma planilha CSV.",
+  "action": {
+    "default_title": "Abrir BiblioColeta"
+  },
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "permissions": ["scripting", "downloads"],
+  "host_permissions": [
+    "https://search.scielo.org/*",
+    "https://www.scielo.br/*",
+    "https://scielo.br/*"
+  ]
+}
