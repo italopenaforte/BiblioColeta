@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import date, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -11,11 +12,14 @@ from pathlib import Path
 import secrets
 import subprocess
 import sys
+import tempfile
 import threading
+import time
+import traceback
 from urllib.parse import parse_qs, quote, urlparse
 import webbrowser
 
-from bibliopnrs import brazil_url, folder_for_query, query_url
+from bibliocoleta import brazil_url, folder_for_query, query_url
 
 
 FROZEN = bool(getattr(sys, "frozen", False))
@@ -61,20 +65,36 @@ def next_folder(url: str) -> Path:
 
 
 def run_collection(url: str, search_date: str, folder: Path) -> None:
-    if FROZEN:
-        command = [sys.executable, "--collect", "--url", url, "--data-busca", search_date,
-                   "--saida", str(folder)]
-    else:
-        command = [sys.executable, "-u", str(ROOT / "bibliopnrs.py"), "--url", url,
-                   "--data-busca", search_date, "--saida", str(folder)]
     try:
-        process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE,
-                                   stderr=subprocess.STDOUT, text=True, bufsize=1)
-        assert process.stdout is not None
-        for line in process.stdout:
-            with LOCK:
-                STATE["lines"].append(line.rstrip())
-        code = process.wait()
+        if FROZEN:
+            with tempfile.TemporaryDirectory(prefix="bibliocoleta-") as temp:
+                log_file = Path(temp) / "coleta.log"
+                log_file.touch()
+                command = [sys.executable, "--collect", "--log-file", str(log_file),
+                           "--url", url, "--data-busca", search_date, "--saida", str(folder)]
+                process = subprocess.Popen(command, cwd=ROOT, stdin=subprocess.DEVNULL,
+                                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                with log_file.open(encoding="utf-8", errors="replace") as output:
+                    while True:
+                        line = output.readline()
+                        if line:
+                            with LOCK:
+                                STATE["lines"].append(line.rstrip())
+                        elif process.poll() is None:
+                            time.sleep(0.1)
+                        else:
+                            break
+                code = process.wait()
+        else:
+            command = [sys.executable, "-u", str(ROOT / "bibliocoleta.py"), "--url", url,
+                       "--data-busca", search_date, "--saida", str(folder)]
+            process = subprocess.Popen(command, cwd=ROOT, stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT, text=True, bufsize=1)
+            assert process.stdout is not None
+            for line in process.stdout:
+                with LOCK:
+                    STATE["lines"].append(line.rstrip())
+            code = process.wait()
         with LOCK:
             STATE["result"] = "done" if code == 0 else "error"
             STATE["running"] = False
@@ -87,7 +107,7 @@ def run_collection(url: str, search_date: str, folder: Path) -> None:
 
 PAGE = """<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BiblioPNRS · Coleta SciELO</title>
+<title>BiblioColeta · Coleta SciELO</title>
 <style>
 body{font:16px/1.5 system-ui,sans-serif;background:#f5f7f4;color:#173124;margin:0}
 main{max-width:700px;margin:40px auto;padding:0 20px}h1{margin-bottom:0;font-size:2rem}p{margin-top:8px}
@@ -98,12 +118,12 @@ button,.button{background:#185b3a;color:white;border:0;border-radius:7px;padding
 button:disabled{opacity:.55;cursor:wait}.muted{color:#536b59;font-size:.92rem}.hidden{display:none}#message{font-weight:600}
 pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#eef4ee;border-radius:8px;padding:16px;max-height:270px;overflow:auto}
 a{color:#185b3a}
-</style></head><body><main><h1>Coleta de artigos SciELO</h1>
+</style></head><body><main><h1>BiblioColeta</h1>
 <p>Informe sua busca. A coleta considera apenas a coleção Brasil e cria uma planilha CSV para triagem.</p>
 <section class="card"><form id="form">
 <div><label class="choice"><input type="radio" name="source" value="terms" checked> Buscar por termos</label>
 <label class="choice"><input type="radio" name="source" value="url"> Usar uma busca pronta da SciELO</label></div>
-<div id="termsFields"><label for="terms">Termos da busca</label><input id="terms" name="terms" placeholder="Ex.: Política Nacional de Resíduos Sólidos">
+<div id="termsFields"><label for="terms">Termos da busca</label><input id="terms" name="terms" placeholder="Ex.: ciência aberta">
 <label for="field">Onde procurar</label><select id="field" name="field">
 <option value="subject">Título, resumo e palavras-chave</option><option value="ti">Título</option>
 <option value="ab">Resumo</option><option value="kw">Palavras-chave</option></select></div>
@@ -235,31 +255,49 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     if FROZEN:
+        if sys.stdout is None:
+            sys.stdout = open(os.devnull, "w")
+        if sys.stderr is None:
+            sys.stderr = open(os.devnull, "w")
         os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(
             Path(sys._MEIPASS) / "playwright" / "driver" / "package" / ".local-browsers")
     if FROZEN and len(sys.argv) > 1 and sys.argv[1] == "--check":
-        from playwright.sync_api import sync_playwright
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch()
-            browser.close()
-        probe = subprocess.run([sys.executable, "--collect", "--url", "invalid",
-                                "--data-busca", "01/01/2026"],
-                               capture_output=True, text=True, check=False)
-        if probe.returncode != 2 or "Erro:" not in probe.stderr:
-            raise RuntimeError(f"A coleta empacotada não iniciou corretamente: {probe.stderr or probe.stdout}")
+        try:
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as playwright:
+                browser = playwright.chromium.launch()
+                browser.close()
+            with tempfile.TemporaryDirectory(prefix="bibliocoleta-check-") as temp:
+                log_file = Path(temp) / "coleta.log"
+                probe = subprocess.run([sys.executable, "--collect", "--log-file", str(log_file),
+                                        "--url", "invalid", "--data-busca", "01/01/2026"],
+                                       stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                       stderr=subprocess.DEVNULL, timeout=30, check=False)
+                output = log_file.read_text(encoding="utf-8") if log_file.exists() else "Sem log da coleta."
+                if probe.returncode != 2 or "Erro:" not in output:
+                    raise RuntimeError(f"A coleta empacotada não iniciou corretamente: {output}")
+        except Exception:
+            (ROOT / "check-error.txt").write_text(traceback.format_exc(), encoding="utf-8")
+            raise SystemExit(1)
         return
     if FROZEN and len(sys.argv) > 1 and sys.argv[1] == "--collect":
-        import bibliopnrs
-        if sys.stdout is None:
-            sys.stdout = open(1, "w", encoding="utf-8", buffering=1, closefd=False)
-        if sys.stderr is None:
-            sys.stderr = open(2, "w", encoding="utf-8", buffering=1, closefd=False)
-        sys.argv.pop(1)
-        raise SystemExit(bibliopnrs.main())
+        import bibliocoleta
+        if len(sys.argv) < 4 or sys.argv[2] != "--log-file":
+            raise SystemExit(2)
+        log_file = Path(sys.argv[3])
+        sys.argv = [sys.argv[0], *sys.argv[4:]]
+        with log_file.open("w", encoding="utf-8", buffering=1) as output:
+            with redirect_stdout(output), redirect_stderr(output):
+                try:
+                    code = bibliocoleta.main()
+                except Exception:
+                    traceback.print_exc()
+                    code = 1
+        raise SystemExit(code)
     server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
     address = f"http://127.0.0.1:{server.server_port}/?token={TOKEN}"
     if not FROZEN:
-        print("BiblioPNRS aberto no navegador. Mantenha esta janela aberta durante a coleta.")
+        print("BiblioColeta aberto no navegador. Mantenha esta janela aberta durante a coleta.")
         print(f"Se o navegador não abrir sozinho, acesse: {address}")
     webbrowser.open(address)
     try:

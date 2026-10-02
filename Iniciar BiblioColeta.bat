@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title BiblioPNRS
+title BiblioColeta
 
 if exist ".venv\Scripts\python.exe" goto ready
 

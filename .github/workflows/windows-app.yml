@@ -3,6 +3,8 @@ name: Criar aplicativo Windows
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -22,9 +24,13 @@ jobs:
       - name: Verificar navegador incluído
         shell: pwsh
         run: |
-          & '.\dist\BiblioPNRS\BiblioPNRS.exe' --check
-          if ($LASTEXITCODE -ne 0) { throw 'O navegador não abriu no aplicativo empacotado.' }
+          & '.\dist\BiblioColeta\BiblioColeta.exe' --check
+          if ($LASTEXITCODE -ne 0) {
+            $errorFile = '.\dist\BiblioColeta\check-error.txt'
+            if (Test-Path $errorFile) { Get-Content $errorFile }
+            throw 'A verificação do aplicativo empacotado falhou.'
+          }
       - uses: actions/upload-artifact@v4
         with:
-          name: BiblioPNRS-Windows
-          path: BiblioPNRS-Windows.zip
+          name: BiblioColeta-Windows
+          path: BiblioColeta-Windows.zip

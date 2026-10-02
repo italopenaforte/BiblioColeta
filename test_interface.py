@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import sys
 import threading
 import unittest
 from unittest.mock import patch
@@ -13,8 +14,8 @@ import interface
 
 class InterfaceTests(unittest.TestCase):
     def test_search_terms_and_scielo_link(self):
-        url = interface.make_search_url({"source": "terms", "field": "ti", "terms": "resíduos sólidos"})
-        self.assertEqual(parse_qs(urlparse(url).query)["q"], ['ti:("resíduos sólidos")'])
+        url = interface.make_search_url({"source": "terms", "field": "ti", "terms": "ciência aberta"})
+        self.assertEqual(parse_qs(urlparse(url).query)["q"], ['ti:("ciência aberta")'])
         filtered = interface.make_search_url({"source": "url", "url":
             "https://search.scielo.org/?q=teste&filter%5Bla%5D%5B%5D=pt"})
         params = parse_qs(urlparse(filtered).query)
@@ -36,6 +37,24 @@ class InterfaceTests(unittest.TestCase):
                 second = interface.next_folder(url)
                 self.assertNotEqual(first, second)
                 self.assertEqual(second.parent, first.parent)
+
+    def test_packaged_collection_logs_without_standard_streams(self):
+        with TemporaryDirectory() as temp:
+            log_file = Path(temp) / "coleta.log"
+            args = ["BiblioColeta.exe", "--collect", "--log-file", str(log_file),
+                    "--url", "invalid", "--data-busca", "01/01/2026"]
+            with patch.object(interface, "FROZEN", True), \
+                 patch.object(sys, "_MEIPASS", temp, create=True), \
+                 patch.object(sys, "argv", args), \
+                 patch.object(sys, "stdout", None), \
+                 patch.object(sys, "stderr", None), \
+                 patch.dict(interface.os.environ, {}, clear=False):
+                with self.assertRaises(SystemExit) as result:
+                    interface.main()
+                sys.stdout.close()
+                sys.stderr.close()
+            self.assertEqual(result.exception.code, 2)
+            self.assertIn("Erro:", log_file.read_text(encoding="utf-8"))
 
     def test_local_page_requires_token_and_rejects_invalid_search(self):
         try:
