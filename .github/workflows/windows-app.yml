@@ -22,14 +22,21 @@ jobs:
         shell: pwsh
         run: .\construir_windows.ps1
       - name: Verificar navegador incluído
+        timeout-minutes: 3
         shell: pwsh
         run: |
-          & '.\dist\BiblioColeta\BiblioColeta.exe' --check
-          if ($LASTEXITCODE -ne 0) {
+          $check = Start-Process -FilePath '.\dist\BiblioColeta\BiblioColeta.exe' -ArgumentList '--check' -Wait -PassThru
+          Write-Host "Código de saída da verificação: $($check.ExitCode)"
+          if ($check.ExitCode -ne 0) {
             $errorFile = '.\dist\BiblioColeta\check-error.txt'
-            if (Test-Path $errorFile) { Get-Content $errorFile }
-            throw 'A verificação do aplicativo empacotado falhou.'
+            if (Test-Path $errorFile) {
+              Get-Content $errorFile
+            } else {
+              Write-Host 'O executável terminou sem gerar check-error.txt.'
+            }
+            throw "A verificação do aplicativo empacotado falhou (código $($check.ExitCode))."
           }
+          Write-Host 'Navegador e coleta empacotada verificados com sucesso.'
       - uses: actions/upload-artifact@v4
         with:
           name: BiblioColeta-Windows
