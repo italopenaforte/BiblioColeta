@@ -1,0 +1,10 @@
+.venv/
+.venv-build/
+__pycache__/
+build/
+dist/
+*.spec
+*.zip
+coleta-*/
+artigos/*
+!artigos/.gitkeep

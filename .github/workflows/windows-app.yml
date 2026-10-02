@@ -1,0 +1,30 @@
+name: Criar aplicativo Windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Testar código
+        shell: pwsh
+        run: python -m unittest -q
+      - name: Criar pacote
+        shell: pwsh
+        run: .\construir_windows.ps1
+      - name: Verificar navegador incluído
+        shell: pwsh
+        run: |
+          & '.\dist\BiblioPNRS\BiblioPNRS.exe' --check
+          if ($LASTEXITCODE -ne 0) { throw 'O navegador não abriu no aplicativo empacotado.' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BiblioPNRS-Windows
+          path: BiblioPNRS-Windows.zip
